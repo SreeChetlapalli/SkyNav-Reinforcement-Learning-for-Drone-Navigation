@@ -29,16 +29,16 @@ class DroneEnvironment:
         force = np.array([0.0,0.0])
         #upwards
         if action == 0:
-            np.array([0.0,1.0])
+            force = np.array([0.0,1.0])
         #downwards
-        elif action == 2:
-            np.array([0.0,-1.0])
+        elif action == 1:
+            force = np.array([0.0,-1.0])
         #left
-        elif action == 3:
-            np.array([-1.0,0.0])
+        elif action == 2:
+            force = np.array([-1.0,0.0])
         #right
         elif action == 3:
-            np.array([1.0, 0.0])
+            force = np.array([1.0, 0.0])
 
         #update physics
         self.drone_acceleration = force
@@ -85,11 +85,34 @@ class DroneEnvironment:
 
             self.epsilon = 1.0
 
-model = tf.keras.Sequential([
-    tf.keras.layers.Dense(32, activation='relu', input_shape=(state_size,)),
-    tf.keras.layers.Dense(32, activation = 'relu'),
-    tf.keras.layers.Dense(action_size, activation = 'linear')
-])
+            model = tf.keras.Sequential([
+                tf.keras.layers.Dense(32, activation='relu', input_shape=(state_size,)),
+                tf.keras.layers.Dense(32, activation = 'relu'),
+                tf.keras.layers.Dense(action_size, activation = 'linear')
+            ])
+
+            model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=0.001))
+            return model
+        
+        def remember(self, state, action, reward, next_state, done):
+
+            self.memory.append((state, action, reward, next_state, done))
+
+        def act(self, state):
+            if np.random.rand() <= self.epsilon:
+                return random.randrange(self.action_size)
+            
+            act_values = self.model.predict(state)
+            return np.argmax(act_values[0])
+        
+        def replay(self, memory, next_state):
+            minibatch = random.sample(self.memory, 32)
+            for i in minibatch:
+                target = reward + gamma * max(scores_from_next_state)
+            return target 
+
+
+        
 
 
 
