@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from collections import deque
 import random
+import matplotlib.pyplot as plt
 from DroneEnvironment import DroneEnvironment # Import the environment
 
 # Hyperparameters
@@ -14,6 +15,8 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.memory = deque(maxlen=2000)
         self.epsilon = 1.0
+        self.epsilon_min = 0.01
+        self.epsilon_decay = 0.995
         self.action_size = action_size
         self.gamma = GAMMA
         
@@ -59,6 +62,7 @@ if __name__ == "__main__":
     state_size = 6
     action_size = 4
     agent = DQNAgent(state_size, action_size)
+    scores = []
 
     for e in range(EPISODES):
         state = env.reset()
@@ -75,5 +79,11 @@ if __name__ == "__main__":
             if len(agent.memory) > BATCH_SIZE:
                 agent.replay(BATCH_SIZE)
         
-        # We can add a print statement here to see the progress
+        agent.epsilon = max(agent.epsilon_min, agent.epsilon * agent.epsilon_decay)
+        scores.append(total_reward)
         print(f"Episode: {e+1}/{EPISODES}, Score: {total_reward}")
+    
+    plt.plot(scores)
+    plt.show()
+
+
